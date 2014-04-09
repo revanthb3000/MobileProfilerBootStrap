@@ -68,16 +68,39 @@ public class DatabaseConnector {
 		String query = "";
 		try {
 			Statement statement = connection.createStatement();
-			query = "CREATE TABLE IF NOT EXISTS `classcontents` "
-					+ "(`classId` int(11) NOT NULL,`numberOfDocs` "
-					+ "int(11) NOT NULL,PRIMARY KEY (`classId`));";
-			statement.executeUpdate(query);
 
+			// THIS WON'T SUFFICE. OPEN THE SQLITE FILE AND SET responseId to
+			// INTEGER PRIMARY KEY. This is for the AUTO_INCREMENT thing.
+			query = "CREATE TABLE IF NOT EXISTS `responses` (`responseId` int(11) NOT NULL,"
+					+ "`userId` varchar(255) NOT NULL,`question` varchar(255) NOT NULL,"
+					+ "`answer` int(11) NOT NULL,`className` varchar(255) NOT NULL)";
+			statement.executeUpdate(query);
 		} catch (SQLException e) {
 			System.out.println("Exception Caught for query " + query + " \n"
 					+ e);
 			e.printStackTrace();
 		}
 	}
+	
+	/**
+	 * Given response data, this query inserts it into the table.
+	 * @param userId
+	 * @param question
+	 * @param answer
+	 * @param className
+	 */
+	public void insertResponse(String userId, String question, int answer, String className){
+		String query = "INSERT INTO `responses` (`userId` ,`question` ,`answer` ,`className`)"
+				+ "VALUES ('"+userId+"', '"+question+"', '"+answer+"', '"+className+"');";
+		try {
+			Statement statement = connection.createStatement();
+			statement.executeUpdate(query);
+		} catch (SQLException e) {
+			System.out.println("Exception Caught for query " + query + " \n"
+					+ e);
+			e.printStackTrace();
+		}
+	}
+	
 
 }

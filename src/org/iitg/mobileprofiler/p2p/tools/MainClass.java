@@ -2,6 +2,7 @@ package org.iitg.mobileprofiler.p2p.tools;
 
 import it.unipr.ce.dsg.s2p.org.json.JSONException;
 
+import org.iitg.mobileprofiler.db.DatabaseConnector;
 import org.iitg.mobileprofiler.p2p.peer.BootstrapPeer;
 
 /**
