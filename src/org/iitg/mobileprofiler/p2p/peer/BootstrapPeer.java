@@ -9,9 +9,11 @@ import it.unipr.ce.dsg.s2p.peer.Peer;
 import it.unipr.ce.dsg.s2p.peer.PeerDescriptor;
 import it.unipr.ce.dsg.s2p.sip.Address;
 
+import org.iitg.mobileprofiler.db.DatabaseConnector;
 import org.iitg.mobileprofiler.p2p.msg.JoinMessage;
 import org.iitg.mobileprofiler.p2p.msg.PeerListMessage;
 import org.iitg.mobileprofiler.p2p.msg.PeerListRequestMessage;
+import org.iitg.mobileprofiler.p2p.msg.RepoStorageMessage;
 import org.iitg.mobileprofiler.p2p.msg.UserQueryMessage;
 
 import com.google.gson.Gson;
@@ -22,9 +24,15 @@ import com.google.gson.Gson;
  *
  */
 public class BootstrapPeer extends Peer {
+	
+	/**
+	 * Your DB Connector. Use this to interact with the repo DB.
+	 */
+	DatabaseConnector databaseConnector = null;
 
-	public BootstrapPeer(String key, String peerName, int peerPort) {
+	public BootstrapPeer(String key, String peerName, int peerPort) {		
 		super(null, key, peerName, peerPort);
+		databaseConnector = new DatabaseConnector();
 	}
 
 	/**
@@ -87,6 +95,11 @@ public class BootstrapPeer extends Peer {
 				Gson gson = new Gson();
 				UserQueryMessage userQueryMessage = gson.fromJson(peerMsg.toString(), UserQueryMessage.class);
 				broadcastMessage(userQueryMessage, ignoreAddress);
+			}
+			else if(peerMsg.get("type").equals(RepoStorageMessage.MSG_REPO_STORAGE)){
+				Gson gson = new Gson();
+				RepoStorageMessage repoStorageMessage= gson.fromJson(peerMsg.toString(), RepoStorageMessage.class);
+				databaseConnector.insertResponse(repoStorageMessage.getUserId(), repoStorageMessage.getQuestion(), repoStorageMessage.getAnswer(), "N/A");
 			}
 			
 		} catch (JSONException e) {
