@@ -1,5 +1,7 @@
 package org.iitg.mobileprofiler.p2p.peer;
 
+import java.util.ArrayList;
+
 import it.unipr.ce.dsg.s2p.message.BasicMessage;
 import it.unipr.ce.dsg.s2p.message.parser.JSONParser;
 import it.unipr.ce.dsg.s2p.org.json.JSONException;
@@ -10,10 +12,13 @@ import it.unipr.ce.dsg.s2p.peer.PeerDescriptor;
 import it.unipr.ce.dsg.s2p.sip.Address;
 
 import org.iitg.mobileprofiler.db.DatabaseConnector;
+import org.iitg.mobileprofiler.db.ResponseDao;
 import org.iitg.mobileprofiler.p2p.msg.JoinMessage;
 import org.iitg.mobileprofiler.p2p.msg.PeerListMessage;
 import org.iitg.mobileprofiler.p2p.msg.PeerListRequestMessage;
 import org.iitg.mobileprofiler.p2p.msg.RepoStorageMessage;
+import org.iitg.mobileprofiler.p2p.msg.ResponseDataMessage;
+import org.iitg.mobileprofiler.p2p.msg.ResponseRequestMessage;
 import org.iitg.mobileprofiler.p2p.msg.UserQueryMessage;
 
 import com.google.gson.Gson;
@@ -100,6 +105,14 @@ public class BootstrapPeer extends Peer {
 				Gson gson = new Gson();
 				RepoStorageMessage repoStorageMessage= gson.fromJson(peerMsg.toString(), RepoStorageMessage.class);
 				databaseConnector.insertResponse(repoStorageMessage.getUserId(), repoStorageMessage.getQuestion(), repoStorageMessage.getAnswer(), "N/A");
+			}
+			else if(peerMsg.get("type").equals(ResponseRequestMessage.MSG_RESPONSE_REQUEST)){
+				JSONObject params = peerMsg.getJSONObject("payload").getJSONObject("params");
+				int maxResponseId = Integer.parseInt(peerMsg.get("maxResponseId").toString());
+				int repoMaxResponseId = databaseConnector.getMaxResponseId();
+				ArrayList<ResponseDao> responses = databaseConnector.getResponses(maxResponseId + 1, repoMaxResponseId);
+				ResponseDataMessage responseDataMessage = new ResponseDataMessage(peerDescriptor, responses);
+				send(new Address(params.get("address").toString()), responseDataMessage);
 			}
 			
 		} catch (JSONException e) {

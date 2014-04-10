@@ -50,6 +50,11 @@ public class ResponseDao {
 	public void setClassName(String className) {
 		this.className = className;
 	}
-	
+
+	@Override
+	public String toString() {
+		return "ResponseDao [userId=" + userId + ", question=" + question
+				+ ", answer=" + answer + ", className=" + className + "]";
+	}
 	
 }

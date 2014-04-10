@@ -1,7 +1,11 @@
 package org.iitg.mobileprofiler.p2p.tools;
 
+import java.util.ArrayList;
+
 import it.unipr.ce.dsg.s2p.org.json.JSONException;
 
+import org.iitg.mobileprofiler.db.DatabaseConnector;
+import org.iitg.mobileprofiler.db.ResponseDao;
 import org.iitg.mobileprofiler.p2p.peer.BootstrapPeer;
 
 /**
@@ -15,7 +19,14 @@ public class MainClass {
 	private static int boostrapPort = 5080;
 
 	public static void main(String[] args) throws JSONException {
-		startBootstrapNode();
+		ArrayList<ResponseDao> responseDaos = new ArrayList<ResponseDao>();
+		responseDaos.add(new ResponseDao("rb3000", "This is a question", 0, "N/A"));
+		responseDaos.add(new ResponseDao("rb3000", "This is a question", 0, "N/A"));
+		responseDaos.add(new ResponseDao("rb30030", "This is a question", 0, "N/A"));
+		DatabaseConnector databaseConnector = new DatabaseConnector();
+		databaseConnector.insertResponses(responseDaos);
+		databaseConnector.closeDBConnection();
+		//startBootstrapNode();
 	}
 
 	public static void startBootstrapNode() {

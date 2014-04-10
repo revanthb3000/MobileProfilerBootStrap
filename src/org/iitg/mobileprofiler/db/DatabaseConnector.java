@@ -2,8 +2,10 @@ package org.iitg.mobileprofiler.db;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 
 /**
  * This is the main class used to interact with the database. A class with
@@ -101,6 +103,91 @@ public class DatabaseConnector {
 			e.printStackTrace();
 		}
 	}
+
+	/**
+	 * Given an arraylist of response daos, this function will insert them into the DB.
+	 * @param responseDaos
+	 */
+	public void insertResponses(ArrayList<ResponseDao> responseDaos){
+		String query = "";
+		try {
+			Statement statement = connection.createStatement();
+			for (int i = 0; i < responseDaos.size(); i++) {
+				if (i % 450 == 0) {
+					statement.executeUpdate(query);
+					query = "INSERT INTO `responses` (`userId` ,`question` ,`answer` ,`className`) Select '"
+							+ responseDaos.get(i).getUserId()
+							+ "' AS `userId`, '"
+							+ responseDaos.get(i).getQuestion()
+							+ "' AS `question`, '"
+							+ responseDaos.get(i).getAnswer()
+							+ "' AS `answer`, '"
+							+ responseDaos.get(i).getClassName()
+							+ "' AS `className`";
+				} else {
+					query += "UNION SELECT '"
+							+ responseDaos.get(i).getUserId() + "','"
+							+ responseDaos.get(i).getQuestion() + "','"
+							+ responseDaos.get(i).getAnswer() + "','"
+							+ responseDaos.get(i).getClassName() + "'  ";
+				}
+			}
+			statement.executeUpdate(query);
+		} catch (SQLException e) {
+			System.out.println("Exception Caught for query " + query + " \n"
+					+ e);
+			e.printStackTrace();
+		}
+	}
 	
+	/**
+	 * Gets the max responseId present in the table.
+	 * @return
+	 */
+	public int getMaxResponseId(){
+		String query = "SELECT MAX(responseId) from responses;";
+		int questionId = 0;
+		try {
+			Statement statement = connection.createStatement();
+			ResultSet resultSet;
+			resultSet = statement.executeQuery(query);
+			while (resultSet.next()) {
+				questionId = resultSet.getInt("MAX(responseId)");
+			}
+		} catch (SQLException e) {
+			System.out.println("Exception Caught for query " + query + " \n"
+					+ e);
+			e.printStackTrace();
+		}
+		return questionId;
+	}
+	
+	/**
+	 * Given a startingId and an endingId, this query will return an ArrayList of Responses.
+	 * @param startingId
+	 * @param endingId
+	 * @return
+	 */
+	public ArrayList<ResponseDao> getResponses(int startingId, int endingId){
+		ArrayList<ResponseDao> responseDaos = new ArrayList<ResponseDao>();
+		String query = "Select * from `responses` where responseId>="+startingId+" AND responseId<="+endingId+"";
+		try {
+			Statement statement = connection.createStatement();
+			ResultSet resultSet;
+			resultSet = statement.executeQuery(query);
+			while (resultSet.next()) {
+				String userId = resultSet.getString("userId");
+				String question = resultSet.getString("question");
+				int answer = resultSet.getInt("answer");
+				String className = resultSet.getString("className");
+				responseDaos.add(new ResponseDao(userId, question, answer, className));
+			}
+		} catch (SQLException e) {
+			System.out.println("Exception Caught for query " + query + " \n"
+					+ e);
+			e.printStackTrace();
+		}
+		return responseDaos;
+	}
 
 }
