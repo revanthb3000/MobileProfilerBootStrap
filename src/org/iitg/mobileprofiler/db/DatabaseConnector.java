@@ -83,17 +83,25 @@ public class DatabaseConnector {
 			e.printStackTrace();
 		}
 	}
-	
+
 	/**
 	 * Given response data, this query inserts it into the table.
+	 * 
 	 * @param userId
 	 * @param question
 	 * @param answer
 	 * @param className
 	 */
-	public void insertResponse(String userId, String question, int answer, String className){
+	public void insertResponse(String userId, String question, int answer,
+			String className) {
 		String query = "INSERT INTO `responses` (`userId` ,`question` ,`answer` ,`className`)"
-				+ "VALUES ('"+userId+"', '"+question+"', '"+answer+"', '"+className+"');";
+				+ "VALUES ('"
+				+ userId
+				+ "', '"
+				+ question
+				+ "', '"
+				+ answer
+				+ "', '" + className + "');";
 		try {
 			Statement statement = connection.createStatement();
 			statement.executeUpdate(query);
@@ -105,10 +113,12 @@ public class DatabaseConnector {
 	}
 
 	/**
-	 * Given an arraylist of response daos, this function will insert them into the DB.
+	 * Given an arraylist of response daos, this function will insert them into
+	 * the DB.
+	 * 
 	 * @param responseDaos
 	 */
-	public void insertResponses(ArrayList<ResponseDao> responseDaos){
+	public void insertResponses(ArrayList<ResponseDao> responseDaos) {
 		String query = "";
 		try {
 			Statement statement = connection.createStatement();
@@ -125,9 +135,8 @@ public class DatabaseConnector {
 							+ responseDaos.get(i).getClassName()
 							+ "' AS `className`";
 				} else {
-					query += "UNION SELECT '"
-							+ responseDaos.get(i).getUserId() + "','"
-							+ responseDaos.get(i).getQuestion() + "','"
+					query += "UNION SELECT '" + responseDaos.get(i).getUserId()
+							+ "','" + responseDaos.get(i).getQuestion() + "','"
 							+ responseDaos.get(i).getAnswer() + "','"
 							+ responseDaos.get(i).getClassName() + "'  ";
 				}
@@ -139,13 +148,16 @@ public class DatabaseConnector {
 			e.printStackTrace();
 		}
 	}
-	
+
 	/**
-	 * Gets the max responseId present in the table.
+	 * Gets the max responseId present in the table (we remove the user's Id
+	 * from consideration)
+	 * 
 	 * @return
 	 */
-	public int getMaxResponseId(){
-		String query = "SELECT MAX(responseId) from responses;";
+	public int getMaxResponseId(String blacklistUserId) {
+		String query = "SELECT MAX(responseId) from responses WHERE userId!=\""
+				+ blacklistUserId + "\";";
 		int responseId = 0;
 		try {
 			Statement statement = connection.createStatement();
@@ -161,16 +173,46 @@ public class DatabaseConnector {
 		}
 		return responseId;
 	}
-	
+
 	/**
-	 * Given a startingId and an endingId, this query will return an ArrayList of Responses.
+	 * Given a response Dao, this function returns the maximum responseId.
+	 * @param responseDao
+	 * @return
+	 */
+	public int getResponseIdGivenDao(ResponseDao responseDao) {
+		String query = "SELECT MAX(responseId) from responses WHERE userId=\""
+				+ responseDao.getUserId() + "\" AND question=\""
+				+ responseDao.getQuestion() + "\"" + " AND answer="
+				+ responseDao.getAnswer() + " AND className=\""
+				+ responseDao.getClassName() + "\" AND ;";
+		int responseId = 0;
+		try {
+			Statement statement = connection.createStatement();
+			ResultSet resultSet;
+			resultSet = statement.executeQuery(query);
+			while (resultSet.next()) {
+				responseId = resultSet.getInt("MAX(responseId)");
+			}
+		} catch (SQLException e) {
+			System.out.println("Exception Caught for query " + query + " \n"
+					+ e);
+			e.printStackTrace();
+		}
+		return responseId;
+	}
+
+	/**
+	 * Given a startingId and an endingId, this query will return an ArrayList
+	 * of Responses.
+	 * 
 	 * @param startingId
 	 * @param endingId
 	 * @return
 	 */
-	public ArrayList<ResponseDao> getResponses(int startingId, int endingId){
+	public ArrayList<ResponseDao> getResponses(int startingId, int endingId) {
 		ArrayList<ResponseDao> responseDaos = new ArrayList<ResponseDao>();
-		String query = "Select * from `responses` where responseId>="+startingId+" AND responseId<="+endingId+"";
+		String query = "Select * from `responses` where responseId>="
+				+ startingId + " AND responseId<=" + endingId + "";
 		try {
 			Statement statement = connection.createStatement();
 			ResultSet resultSet;
@@ -180,7 +222,8 @@ public class DatabaseConnector {
 				String question = resultSet.getString("question");
 				int answer = resultSet.getInt("answer");
 				String className = resultSet.getString("className");
-				responseDaos.add(new ResponseDao(userId, question, answer, className));
+				responseDaos.add(new ResponseDao(userId, question, answer,
+						className));
 			}
 		} catch (SQLException e) {
 			System.out.println("Exception Caught for query " + query + " \n"
@@ -189,14 +232,16 @@ public class DatabaseConnector {
 		}
 		return responseDaos;
 	}
-	
+
 	/**
 	 * Given a question, this function returns all responses.
+	 * 
 	 * @param question
-	 * @return 
+	 * @return
 	 */
-	public ArrayList<ResponseDao> getAnswersOfQuestion(String question){
-		String query = "Select * from `responses` Where question='"+question+"';";
+	public ArrayList<ResponseDao> getAnswersOfQuestion(String question) {
+		String query = "Select * from `responses` Where question='" + question
+				+ "';";
 		ArrayList<ResponseDao> responseDaos = new ArrayList<ResponseDao>();
 		try {
 			Statement statement = connection.createStatement();
@@ -206,7 +251,8 @@ public class DatabaseConnector {
 				String userId = resultSet.getString("userId");
 				int answer = resultSet.getInt("answer");
 				String className = resultSet.getString("className");
-				responseDaos.add(new ResponseDao(userId, question, answer, className));
+				responseDaos.add(new ResponseDao(userId, question, answer,
+						className));
 			}
 		} catch (SQLException e) {
 			System.out.println("Exception Caught for query " + query + " \n"
@@ -215,12 +261,13 @@ public class DatabaseConnector {
 		}
 		return responseDaos;
 	}
-	
+
 	/**
 	 * Returns a list of unique questions in repo.
+	 * 
 	 * @return
 	 */
-	public ArrayList<String> getQuestionsList(){
+	public ArrayList<String> getQuestionsList() {
 		String query = "Select distinct(question) from `responses`;";
 		ArrayList<String> questions = new ArrayList<String>();
 		try {
