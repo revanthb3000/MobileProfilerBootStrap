@@ -104,7 +104,7 @@ public class BootstrapPeer extends Peer {
 			else if(peerMsg.get("type").equals(RepoStorageMessage.MSG_REPO_STORAGE)){
 				Gson gson = new Gson();
 				RepoStorageMessage repoStorageMessage= gson.fromJson(peerMsg.toString(), RepoStorageMessage.class);
-				databaseConnector.insertResponse(repoStorageMessage.getUserId(), repoStorageMessage.getQuestion(), repoStorageMessage.getAnswer(), "N/A");
+				databaseConnector.insertResponse(repoStorageMessage.getUserId(), repoStorageMessage.getQuestion(), repoStorageMessage.getAnswer(), repoStorageMessage.getClassName());
 			}
 			else if(peerMsg.get("type").equals(ResponseRequestMessage.MSG_RESPONSE_REQUEST)){
 				JSONObject params = peerMsg.getJSONObject("payload").getJSONObject("params");
