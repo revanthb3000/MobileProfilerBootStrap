@@ -110,7 +110,7 @@ public class BootstrapPeer extends Peer {
 				JSONObject params = peerMsg.getJSONObject("payload").getJSONObject("params");
 				Gson gson = new Gson();
 				ResponseDao responseDao = gson.fromJson(peerMsg.get("responseDao").toString(), ResponseDao.class);
-				int maxUserResponseId = databaseConnector.getResponseIdGivenDao(responseDao);
+				int maxUserResponseId = (responseDao==null) ? 0: databaseConnector.getResponseIdGivenDao(responseDao);
 				int repoMaxResponseId = databaseConnector.getMaxResponseId("");
 				ArrayList<ResponseDao> responses = databaseConnector.getResponses(maxUserResponseId + 1, repoMaxResponseId);
 				ResponseDataMessage responseDataMessage = new ResponseDataMessage(peerDescriptor, responses);
