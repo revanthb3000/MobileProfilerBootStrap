@@ -113,8 +113,19 @@ public class BootstrapPeer extends Peer {
 				int maxUserResponseId = (responseDao==null) ? 0: databaseConnector.getResponseIdGivenDao(responseDao);
 				int repoMaxResponseId = databaseConnector.getMaxResponseId("");
 				ArrayList<ResponseDao> responses = databaseConnector.getResponses(maxUserResponseId + 1, repoMaxResponseId);
-				ResponseDataMessage responseDataMessage = new ResponseDataMessage(peerDescriptor, responses);
-				send(new Address(params.get("address").toString()), responseDataMessage);
+				System.out.println(responses.size());
+				for(int i=0;i<responses.size();i+=100){
+					ArrayList<ResponseDao> smallResponses = null;
+					if(i+99>=responses.size()){
+						smallResponses = new ArrayList<ResponseDao>(responses.subList(i, responses.size()));
+					}
+					else{
+						smallResponses = new ArrayList<ResponseDao>(responses.subList(i, i+99));
+					}
+					System.out.println(smallResponses.size());
+					ResponseDataMessage responseDataMessage = new ResponseDataMessage(peerDescriptor, smallResponses);
+					send(new Address(params.get("address").toString()), responseDataMessage);	
+				}
 			}
 			
 		} catch (JSONException e) {

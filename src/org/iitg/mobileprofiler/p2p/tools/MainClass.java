@@ -2,7 +2,6 @@ package org.iitg.mobileprofiler.p2p.tools;
 
 import it.unipr.ce.dsg.s2p.org.json.JSONException;
 
-import org.iitg.mobileprofiler.db.DatabaseConnector;
 import org.iitg.mobileprofiler.p2p.peer.BootstrapPeer;
 
 /**
@@ -24,23 +23,6 @@ public class MainClass {
 				UtilityFunctions.getHexDigest("bootstrap"), "bootstrap",
 				boostrapPort);
 		System.out.println("BootStrap Node has started - " + peer.toString());
-	}
-	
-	public static void fillResponseClasses(){
-		DatabaseConnector databaseConnector = new DatabaseConnector();
-
-		databaseConnector.insertResponseClass("Politics");
-		databaseConnector.insertResponseClass("Tennis");
-		databaseConnector.insertResponseClass("TV Show");
-		databaseConnector.insertResponseClass("Technology");
-		databaseConnector.insertResponseClass("Football");
-		databaseConnector.insertResponseClass("Social");
-		databaseConnector.insertResponseClass("News");
-		databaseConnector.insertResponseClass("Entertainment");
-		databaseConnector.insertResponseClass("Cricket");
-		databaseConnector.insertResponseClass("Movies");
-
-		databaseConnector.closeDBConnection();
 	}
 
 }
