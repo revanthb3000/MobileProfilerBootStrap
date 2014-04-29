@@ -75,7 +75,36 @@ public class DatabaseConnector {
 			// INTEGER PRIMARY KEY. This is for the AUTO_INCREMENT thing.
 			query = "CREATE TABLE IF NOT EXISTS `responses` (`responseId` int(11) NOT NULL,"
 					+ "`userId` varchar(255) NOT NULL,`question` varchar(255) NOT NULL,"
-					+ "`answer` int(11) NOT NULL,`className` varchar(255) NOT NULL)";
+					+ "`answer` int(11) NOT NULL,`classId` int(11) NOT NULL)";
+			statement.executeUpdate(query);
+
+			// THIS WON'T SUFFICE. OPEN THE SQLITE FILE AND SET classId to
+			// INTEGER PRIMARY KEY. This is for the AUTO_INCREMENT thing.
+			query = "CREATE TABLE IF NOT EXISTS `responseclasses` (`classId` "
+					+ "int(11) NOT NULL,`className` varchar(255) NOT NULL)";
+			statement.executeUpdate(query);
+
+		} catch (SQLException e) {
+			System.out.println("Exception Caught for query " + query + " \n"
+					+ e);
+			e.printStackTrace();
+		}
+	}
+
+	/*************************************************************************
+	 * Queries that run on the response Class table follow.
+	 **************************************************************************/
+
+	/**
+	 * This is used to insert a className into the response class table.
+	 * Standard query.
+	 * @param className
+	 */
+	public void insertResponseClass(String className) {
+		String query = "INSERT INTO responseclasses (`className`) VALUES ('"
+				+ className + "');";
+		try {
+			Statement statement = connection.createStatement();
 			statement.executeUpdate(query);
 		} catch (SQLException e) {
 			System.out.println("Exception Caught for query " + query + " \n"
@@ -85,23 +114,51 @@ public class DatabaseConnector {
 	}
 
 	/**
+	 * Given a classId, the className is returned.
+	 * @param classId
+	 * @return
+	 */
+	public String getResponseClassName(int classId) {
+		String query = "SELECT className FROM `responseclasses` WHERE `classId` = "
+						+ classId + "";
+		String className = "";
+		try {
+			Statement statement = connection.createStatement();
+			ResultSet resultSet;
+			resultSet = statement.executeQuery(query);
+			while (resultSet.next()) {
+				className = resultSet.getString("className");
+			}
+		} catch (SQLException e) {
+			System.out.println("Exception Caught for query " + query + " \n"
+					+ e);
+			e.printStackTrace();
+		}
+		return className;
+	}
+
+	/*************************************************************************
+	 * Queries that run on the response table follow.
+	 **************************************************************************/
+
+	/**
 	 * Given response data, this query inserts it into the table.
 	 * 
 	 * @param userId
 	 * @param question
 	 * @param answer
-	 * @param className
+	 * @param classId
 	 */
 	public void insertResponse(String userId, String question, int answer,
-			String className) {
-		String query = "INSERT INTO `responses` (`userId` ,`question` ,`answer` ,`className`)"
+			int classId) {
+		String query = "INSERT INTO `responses` (`userId` ,`question` ,`answer` ,`classId`)"
 				+ "VALUES ('"
 				+ userId
 				+ "', '"
 				+ question
 				+ "', '"
 				+ answer
-				+ "', '" + className + "');";
+				+ "', '" + classId + "');";
 		try {
 			Statement statement = connection.createStatement();
 			statement.executeUpdate(query);
@@ -125,20 +182,20 @@ public class DatabaseConnector {
 			for (int i = 0; i < responseDaos.size(); i++) {
 				if (i % 450 == 0) {
 					statement.executeUpdate(query);
-					query = "INSERT INTO `responses` (`userId` ,`question` ,`answer` ,`className`) Select '"
+					query = "INSERT INTO `responses` (`userId` ,`question` ,`answer` ,`classId`) Select '"
 							+ responseDaos.get(i).getUserId()
 							+ "' AS `userId`, '"
 							+ responseDaos.get(i).getQuestion()
 							+ "' AS `question`, '"
 							+ responseDaos.get(i).getAnswer()
 							+ "' AS `answer`, '"
-							+ responseDaos.get(i).getClassName()
-							+ "' AS `className`";
+							+ responseDaos.get(i).getClassId()
+							+ "' AS `classId`";
 				} else {
 					query += "UNION SELECT '" + responseDaos.get(i).getUserId()
 							+ "','" + responseDaos.get(i).getQuestion() + "','"
 							+ responseDaos.get(i).getAnswer() + "','"
-							+ responseDaos.get(i).getClassName() + "'  ";
+							+ responseDaos.get(i).getClassId() + "'  ";
 				}
 			}
 			statement.executeUpdate(query);
@@ -176,6 +233,7 @@ public class DatabaseConnector {
 
 	/**
 	 * Given a response Dao, this function returns the maximum responseId.
+	 * 
 	 * @param responseDao
 	 * @return
 	 */
@@ -183,8 +241,8 @@ public class DatabaseConnector {
 		String query = "SELECT MAX(responseId) from responses WHERE userId=\""
 				+ responseDao.getUserId() + "\" AND question=\""
 				+ responseDao.getQuestion() + "\"" + " AND answer="
-				+ responseDao.getAnswer() + " AND className=\""
-				+ responseDao.getClassName() + "\" AND ;";
+				+ responseDao.getAnswer() + " AND classId="
+				+ responseDao.getClassId() + ";";
 		int responseId = 0;
 		try {
 			Statement statement = connection.createStatement();
@@ -221,9 +279,9 @@ public class DatabaseConnector {
 				String userId = resultSet.getString("userId");
 				String question = resultSet.getString("question");
 				int answer = resultSet.getInt("answer");
-				String className = resultSet.getString("className");
+				int classId = resultSet.getInt("classId");
 				responseDaos.add(new ResponseDao(userId, question, answer,
-						className));
+						classId));
 			}
 		} catch (SQLException e) {
 			System.out.println("Exception Caught for query " + query + " \n"
@@ -250,9 +308,9 @@ public class DatabaseConnector {
 			while (resultSet.next()) {
 				String userId = resultSet.getString("userId");
 				int answer = resultSet.getInt("answer");
-				String className = resultSet.getString("className");
+				int classId = resultSet.getInt("classId");
 				responseDaos.add(new ResponseDao(userId, question, answer,
-						className));
+						classId));
 			}
 		} catch (SQLException e) {
 			System.out.println("Exception Caught for query " + query + " \n"
