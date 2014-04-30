@@ -136,6 +136,30 @@ public class DatabaseConnector {
 		}
 		return className;
 	}
+	
+	/**
+	 * Given a className, the classId is returned.
+	 * @param classId
+	 * @return
+	 */
+	public int getResponseClassId(String className) {
+		String query = "SELECT classId FROM `responseclasses` WHERE `className` = \""
+						+ className + "\";";
+		int classId = 0;
+		try {
+			Statement statement = connection.createStatement();
+			ResultSet resultSet;
+			resultSet = statement.executeQuery(query);
+			while (resultSet.next()) {
+				classId = resultSet.getInt("classId");
+			}
+		} catch (SQLException e) {
+			System.out.println("Exception Caught for query " + query + " \n"
+					+ e);
+			e.printStackTrace();
+		}
+		return classId;
+	}
 
 	/*************************************************************************
 	 * Queries that run on the response table follow.
